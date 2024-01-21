@@ -15,7 +15,8 @@ soup = BeautifulSoup(billboard_page, "html.parser")
 
 songs = soup.select("li ul li h3")
 songs_list = [ song.get_text().strip() for song in songs]
-# print(songs_list)
+songs_list = songs_list[:10]
+print(songs_list)
 
 # Spotify Authentication
 
@@ -24,46 +25,55 @@ load_dotenv(dotenv_path)
 
 client_id = os.getenv("client_id")
 client_secret = os.getenv("client_secret")
-id = os.getenv("id")
 
-sp = spotipy.Spotify(
-    auth_manager=SpotifyOAuth(
-        scope="playlist-modify-private",
-        redirect_uri="http://example.com",
-        client_id=client_id,
-        client_secret=client_secret,
-        show_dialog=True,
-        cache_path="token.txt",
-        username="krizhnatester",
-    )
+
+sp_oauth = SpotifyOAuth(
+    scope="playlist-modify-private",
+    redirect_uri="http://example.com",
+    client_id=client_id,
+    client_secret=client_secret,
+    show_dialog=True,
+    cache_path="token.txt",
+    username="krizhnatester",
 )
 
-query = 'Pink Floyd'
-search_type = 'track'
+# Fetch the access token from the file
+token_info = sp_oauth.get_cached_token()
+access_token = token_info["access_token"]
 
-url = 'https://api.spotify.com/v1/search'
+# Now you can use the access_token as needed
+sp = spotipy.Spotify(auth=access_token)
 
-headers = {
-    'Authorization': f'Bearer {id}'
-}
+url_lists = []
 
-params = {
-    'q': query,
-    'type': search_type
-}
+for song in songs_list:
+    query = song
+    search_type = 'track'
 
-response = requests.get(url, headers=headers, params=params)
+    url = 'https://api.spotify.com/v1/search'
 
-if response.status_code == 200:
-    results = response.json()
-    items = results.get('tracks', {}).get('items', [])
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
 
-    if items:
-        first_track_uri = items[0]['uri']
-        print(f"Spotify URI of the first track: {first_track_uri}")
+    params = {
+        'q': query,
+        'year': 2015,
+        'type': search_type,
+        'limit': 1,
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+
+    if response.status_code == 200:
+        results = response.json()
+        items = results.get('tracks', {}).get('items', [])
+
+        if items:
+            first_track_uri = items[0]['uri']
+            url_lists.append(first_track_uri)
+        else:
+            print("No tracks found in the search results.")
     else:
-        print("No tracks found in the search results.")
-else:
-    print(f"Error: {response.status_code} - {response.text}")
-
+        print(f"Error: {response.status_code} - {response.text}")
 
