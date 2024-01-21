@@ -43,8 +43,11 @@ access_token = token_info["access_token"]
 
 # Now you can use the access_token as needed
 sp = spotipy.Spotify(auth=access_token)
+user_id = sp.current_user()["id"]
 
 url_lists = []
+
+playlist = sp.user_playlist_create(user=user_id, name=f"{user_date} Billboard 100", public=False)
 
 for song in songs_list:
     query = song
@@ -76,4 +79,7 @@ for song in songs_list:
             print("No tracks found in the search results.")
     else:
         print(f"Error: {response.status_code} - {response.text}")
+
+sp.playlist_add_items(playlist_id=playlist["id"], items=url_lists)
+print("Done")
 
