@@ -6,8 +6,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 
-# user_date = input("Enter the year you want to travel back to? (YYYY-MM-DD) : ")
-user_date= "2015-08-12"
+user_date = input("Enter the year you want to travel back to? (YYYY-MM-DD) : ")
+# user_date= "2015-08-12"
 
 response = requests.get(f"https://www.billboard.com/charts/hot-100/{user_date}")
 billboard_page = response.text
@@ -61,7 +61,6 @@ for song in songs_list:
 
     params = {
         'q': query,
-        'year': 2015,
         'type': search_type,
         'limit': 1,
     }
